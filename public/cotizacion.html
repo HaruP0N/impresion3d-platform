@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitar Cotización - Impresión 3D Pro</title>
+    <link rel="icon" href="./otros/Logo_Taller.jpg" type="image/jpeg">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #6E6E6E;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #BAFF39;
+            color: rgb(0, 0, 0);
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stepper {
+            display: flex;
+            justify-content: space-between;
+            padding: 2rem;
+            background: #f8f9fa;
+            position: relative;
+        }
+        
+        .stepper::before {
+            content: '';
+            position: absolute;
+            top: 3.5rem;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background: #ddd;
+            z-index: 0;
+        }
+        
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .step-number {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #999;
+            transition: all 0.3s;
+            margin-bottom: 0.5rem;
+        }
+        
+        .step.active .step-number {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .step.completed .step-number {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
+        
+        .step-label {
+            font-size: 0.85rem;
+            color: #666;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .step.active .step-label {
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .form-content {
+            padding: 2rem;
+        }
+        
+        .form-step {
+            display: none;
+        }
+        
+        .form-step.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+        
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        input.error,
+        select.error {
+            border-color: #ef4444;
+        }
+        
+        .error-message {
+            color: #ef4444;
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+        
+        .error-message.show {
+            display: block;
+        }
+        
+        .file-upload {
+            border: 3px dashed #667eea;
+            border-radius: 8px;
+            padding: 3rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9ff;
+        }
+        
+        .file-upload:hover {
+            background: #f0f2ff;
+            border-color: #764ba2;
+        }
+        
+        .file-upload.dragover {
+            background: #e0e7ff;
+            border-color: #667eea;
+            transform: scale(1.02);
+        }
+        
+        .file-upload-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .file-selected {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #10b981;
+            color: white;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .file-selected.show {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideDown 0.3s ease;
+        }
+        
+        .remove-file {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .price-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            margin: 2rem 0;
+        }
+        
+        .price-display .price {
+            font-size: 3rem;
+            font-weight: bold;
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .form-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #666;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .confirmation {
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .confirmation-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            animation: scaleIn 0.5s ease;
+        }
+        
+        .reference-number {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            
+            .form-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Solicitar Cotización</h1>
+            <p>Complete los siguientes pasos para recibir su cotización</p>
+        </div>
+        
+        <div class="stepper">
+            <div class="step active" data-step="1">
+                <div class="step-number">1</div>
+                <div class="step-label">Archivo 3D</div>
+            </div>
+            <div class="step" data-step="2">
+                <div class="step-number">2</div>
+                <div class="step-label">Especificaciones</div>
+            </div>
+            <div class="step" data-step="3">
+                <div class="step-number">3</div>
+                <div class="step-label">Datos de Contacto</div>
+            </div>
+            <div class="step" data-step="4">
+                <div class="step-number">4</div>
+                <div class="step-label">Resumen</div>
+            </div>
+        </div>
+        
+        <form id="cotizacionForm" class="form-content">
+            <!-- Step 1: File Upload -->
+            <div class="form-step active" data-step="1">
+                <h2 style="margin-bottom: 1.5rem; color: #333;">Paso 1: Sube tu archivo 3D</h2>
+                
+                <div class="file-upload" id="fileUpload">
+                    <div class="file-upload-icon">📁</div>
+                    <p><strong>Arrastra tu archivo aquí o haz clic para seleccionar</strong></p>
+                    <p class="file-info">Formatos aceptados: STL, OBJ | Tamaño máximo: 50MB</p>
+                    <input type="file" id="fileInput" name="archivo" accept=".stl,.obj" style="display: none;">
+                </div>
+                
+                <div class="file-selected" id="fileSelected">
+                    <span id="fileName"></span>
+                    <button type="button" class="remove-file" id="removeFile">✕ Eliminar</button>
+                </div>
+                
+                <span class="error-message" id="fileError">Por favor, sube un archivo 3D</span>
+                
+                <div class="form-buttons">
+                    <button type="button" class="btn btn-primary" onclick="nextStep()">Siguiente →</button>
+                </div>
+            </div>
+            
+            <!-- Step 2: Specifications -->
+            <div class="form-step" data-step="2">
+                <h2 style="margin-bottom: 1.5rem; color: #333;">Paso 2: Especificaciones del Proyecto</h2>
+                
+                <div class="form-group">
+                    <label for="material">Material *</label>
+                    <select id="material" name="material" required>
+                        <option value="">Seleccione un material</option>
+                    </select>
+                    <span class="error-message" id="materialError">Seleccione un material</span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="color">Color *</label>
+                    <select id="color" name="color" required>
+                        <option value="">Seleccione un color</option>
+                    </select>
+                    <span class="error-message" id="colorError">Seleccione un color</span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cantidad">Cantidad de Unidades *</label>
+                    <input type="number" id="cantidad" name="cantidad" min="1" value="1" required>
+                    <span class="error-message" id="cantidadError">Ingrese una cantidad válida (mínimo 1)</span>
+                </div>
+                
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="urgente" name="urgente">
+                        <label for="urgente">Servicio Urgente (+30% del precio base)</label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="comentarios">Comentarios Adicionales (Opcional)</label>
+                    <textarea id="comentarios" name="comentarios" rows="3" placeholder="Detalles especiales sobre su proyecto..."></textarea>
+                </div>
+                
+                <div class="form-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="prevStep()">← Anterior</button>
+                    <button type="button" class="btn btn-primary" onclick="nextStep()">Siguiente →</button>
+                </div>
+            </div>
+            
+            <!-- Step 3: Contact Info -->
+            <div class="form-step" data-step="3">
+                <h2 style="margin-bottom: 1.5rem; color: #333;">Paso 3: Datos de Contacto</h2>
+                
+                <div class="form-group">
+                    <label for="nombre">Nombre Completo *</label>
+                    <input type="text" id="nombre" name="nombre" required placeholder="Juan Pérez">
+                    <span class="error-message" id="nombreError">Ingrese su nombre completo</span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Correo Electrónico *</label>
+                    <input type="email" id="email" name="email" required placeholder="ejemplo@correo.com">
+                    <span class="error-message" id="emailError">Ingrese un correo electrónico válido</span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="telefono">Teléfono (Opcional)</label>
+                    <input type="tel" id="telefono" name="telefono" placeholder="+56 9 1234 5678">
+                </div>
+                
+                <div class="form-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="prevStep()">← Anterior</button>
+                    <button type="button" class="btn btn-primary" onclick="nextStep()">Ver Resumen →</button>
+                </div>
+            </div>
+            
+            <!-- Step 4: Summary -->
+            <div class="form-step" data-step="4">
+                <h2 style="margin-bottom: 1.5rem; color: #333;">Paso 4: Resumen de su Cotización</h2>
+                
+                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 10px; margin-bottom: 1.5rem;">
+                    <div class="summary-item">
+                        <span class="summary-label">Archivo:</span>
+                        <span class="summary-value" id="summaryFile">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Material:</span>
+                        <span class="summary-value" id="summaryMaterial">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Color:</span>
+                        <span class="summary-value" id="summaryColor">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Cantidad:</span>
+                        <span class="summary-value" id="summaryCantidad">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Servicio Urgente:</span>
+                        <span class="summary-value" id="summaryUrgente">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Nombre:</span>
+                        <span class="summary-value" id="summaryNombre">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Email:</span>
+                        <span class="summary-value" id="summaryEmail">-</span>
+                    </div>
+                </div>
+                
+                <div class="price-display">
+                    <h3>PRECIO ESTIMADO</h3>
+                    <div class="price" id="precioTotal">Calculando...</div>
+                    <div class="price-details" id="precioDetalles"></div>
+                </div>
+                
+                <div class="form-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="prevStep()">← Anterior</button>
+                    <button type="button" class="btn btn-primary" onclick="submitForm()">Solicitar Cotización ✓</button>
+                </div>
+            </div>
+            
+            <!-- Loading -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Procesando su cotización...</p>
+            </div>
+            
+            <!-- Confirmation -->
+            <div class="form-step" data-step="5">
+                <div class="confirmation">
+                    <div class="confirmation-icon">✅</div>
+                    <h2 style="color: #10b981; margin-bottom: 1rem;">¡Cotización Enviada!</h2>
+                    <p style="color: #666; margin-bottom: 1.5rem;">
+                        Hemos recibido tu solicitud y te enviaremos la cotización detallada a tu correo electrónico.
+                    </p>
+                    
+                    <div class="reference-number">
+                        Número de Referencia: <span id="refNumber"></span>
+                    </div>
+                    
+                    <p style="color: #666; margin-top: 1rem;">
+                        Guarda este número para hacer seguimiento de tu pedido.
+                    </p>
+                    
+                    <button type="button" class="btn btn-primary" style="margin-top: 2rem;" onclick="location.reload()">
+                        Nueva Cotización
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        let selectedFile = null;
+        let materiales = [];
+
+        // Cargar materiales al inicio
+        async function cargarMateriales() {
+            try {
+                const response = await fetch('/api/materiales');
+                materiales = await response.json();
+                
+                const materialSelect = document.getElementById('material');
+                materialSelect.innerHTML = '<option value="">Seleccione un material</option>';
+                
+                materiales.forEach(mat => {
+                    const option = document.createElement('option');
+                    option.value = mat.nombre.toLowerCase();
+                    option.textContent = `${mat.nombre} - $${mat.precio_gramo.toLocaleString('es-CL')}/gramo`;
+                    option.dataset.colores = mat.colores;
+                    materialSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error al cargar materiales:', error);
+            }
+        }
+
+        // Actualizar colores según material
+        document.getElementById('material').addEventListener('change', function() {
+            const colorSelect = document.getElementById('color');
+            const selectedOption = this.options[this.selectedIndex];
+            
+            if (selectedOption.dataset.colores) {
+                const colores = selectedOption.dataset.colores.split(',');
+                colorSelect.innerHTML = '<option value="">Seleccione un color</option>';
+                
+                colores.forEach(color => {
+                    const option = document.createElement('option');
+                    option.value = color.trim();
+                    option.textContent = color.trim();
+                    colorSelect.appendChild(option);
+                });
+            }
+        });
+
+        // File upload handlers
+        const fileUpload = document.getElementById('fileUpload');
+        const fileInput = document.getElementById('fileInput');
+        const fileSelected = document.getElementById('fileSelected');
+        const fileName = document.getElementById('fileName');
+        
+        fileUpload.addEventListener('click', () => fileInput.click());
+        
+        fileUpload.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUpload.classList.add('dragover');
+        });
+        
+        fileUpload.addEventListener('dragleave', () => {
+            fileUpload.classList.remove('dragover');
+        });
+        
+        fileUpload.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUpload.classList.remove('dragover');
+            handleFile(e.dataTransfer.files[0]);
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            handleFile(e.target.files[0]);
+        });
+        
+        document.getElementById('removeFile').addEventListener('click', () => {
+            fileInput.value = '';
+            fileSelected.classList.remove('show');
+            selectedFile = null;
+        });
+        
+        function handleFile(file) {
+            if (file) {
+                const validTypes = ['stl', 'obj'];
+                const fileExt = file.name.split('.').pop().toLowerCase();
+                const maxSize = 50 * 1024 * 1024;
+                
+                if (!validTypes.includes(fileExt)) {
+                    alert('Formato de archivo no válido. Use STL u OBJ.');
+                    return;
+                }
+                
+                if (file.size > maxSize) {
+                    alert('El archivo es demasiado grande. Máximo 50MB.');
+                    return;
+                }
+                
+                fileName.textContent = file.name;
+                fileSelected.classList.add('show');
+                selectedFile = file;
+                document.getElementById('fileError').classList.remove('show');
+            }
+        }
+        
+        function validateStep(step) {
+            let isValid = true;
+            
+            if (step === 1) {
+                if (!selectedFile) {
+                    document.getElementById('fileError').classList.add('show');
+                    isValid = false;
+                } else {
+                    document.getElementById('fileError').classList.remove('show');
+                }
+            }
+            
+            if (step === 2) {
+                const material = document.getElementById('material').value;
+                const color = document.getElementById('color').value;
+                const cantidad = document.getElementById('cantidad').value;
+                
+                if (!material) {
+                    document.getElementById('materialError').classList.add('show');
+                    isValid = false;
+                } else {
+                    document.getElementById('materialError').classList.remove('show');
+                }
+                
+                if (!color) {
+                    document.getElementById('colorError').classList.add('show');
+                    isValid = false;
+                } else {
+                    document.getElementById('colorError').classList.remove('show');
+                }
+                
+                if (!cantidad || cantidad < 1) {
+                    document.getElementById('cantidadError').classList.add('show');
+                    isValid = false;
+                } else {
+                    document.getElementById('cantidadError').classList.remove('show');
+                }
+            }
+            
+            if (step === 3) {
+                const nombre = document.getElementById('nombre').value;
+                const email = document.getElementById('email').value;
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                
+                if (!nombre) {
+                    document.getElementById('nombreError').classList.add('show');
+                    isValid = false;
+                } else {
+                    document.getElementById('nombreError').classList.remove('show');
+                }
+                
+                if (!email || !emailRegex.test(email)) {
+                    document.getElementById('emailError').classList.add('show');
+                    isValid = false;
+                } else {
+                    document.getElementById('emailError').classList.remove('show');
+                }
+            }
+            
+            return isValid;
+        }
+        
+        function nextStep() {
+            if (!validateStep(currentStep)) {
+                return;
+            }
+            
+            if (currentStep === 3) {
+                updateSummary();
+            }
+            
+            if (currentStep < 4) {
+                changeStep(currentStep + 1);
+            }
+        }
+        
+        function prevStep() {
+            if (currentStep > 1) {
+                changeStep(currentStep - 1);
+            }
+        }
+        
+        function changeStep(step) {
+            document.querySelectorAll('.form-step').forEach(el => el.classList.remove('active'));
+            document.querySelector(`.form-step[data-step="${step}"]`).classList.add('active');
+            
+            document.querySelectorAll('.step').forEach(el => {
+                const stepNum = parseInt(el.dataset.step);
+                el.classList.remove('active', 'completed');
+                if (stepNum === step) {
+                    el.classList.add('active');
+                } else if (stepNum < step) {
+                    el.classList.add('completed');
+                }
+            });
+            
+            currentStep = step;
+            window.scrollTo(0, 0);
+        }
+        
+        function updateSummary() {
+            document.getElementById('summaryFile').textContent = selectedFile ? selectedFile.name : '-';
+            document.getElementById('summaryMaterial').textContent = document.getElementById('material').value || '-';
+            document.getElementById('summaryColor').textContent = document.getElementById('color').value || '-';
+            document.getElementById('summaryCantidad').textContent = document.getElementById('cantidad').value + ' unidad(es)';
+            document.getElementById('summaryUrgente').textContent = document.getElementById('urgente').checked ? 'Sí' : 'No';
+            document.getElementById('summaryNombre').textContent = document.getElementById('nombre').value || '-';
+            document.getElementById('summaryEmail').textContent = document.getElementById('email').value || '-';
+            
+            // Calcular precio estimado
+            const precios = { 'pla': 1500, 'abs': 2000, 'petg': 2500 };
+            const material = document.getElementById('material').value;
+            const cantidad = parseInt(document.getElementById('cantidad').value);
+            const urgente = document.getElementById('urgente').checked;
+            
+            const volumenEstimado = 50;
+            const precioBase = precios[material] * volumenEstimado * cantidad;
+            const recargo = urgente ? precioBase * 0.3 : 0;
+            const total = precioBase + recargo;
+            
+            document.getElementById('precioTotal').textContent = '$' + total.toLocaleString('es-CL');
+            document.getElementById('precioDetalles').textContent = 
+                `Precio base: $${precioBase.toLocaleString('es-CL')}` +
+                (urgente ? ` + Recargo urgente: $${recargo.toLocaleString('es-CL')}` : '');
+        }
+        
+        async function submitForm() {
+            const form = document.getElementById('cotizacionForm');
+            const formData = new FormData(form);
+            
+            // Asegurarse de que el archivo esté incluido
+            if (selectedFile) {
+                formData.set('archivo', selectedFile);
+            }
+            
+            // Mostrar loading
+            document.querySelector('.form-step[data-step="4"]').style.display = 'none';
+            document.getElementById('loading').classList.add('show');
+            
+            try {
+                const response = await fetch('/api/cotizacion', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('loading').classList.remove('show');
+                    document.getElementById('refNumber').textContent = result.numeroReferencia;
+                    changeStep(5);
+                } else {
+                    throw new Error(result.error || 'Error al procesar cotización');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+                document.getElementById('loading').classList.remove('show');
+                document.querySelector('.form-step[data-step="4"]').style.display = 'block';
+            }
+        }
+        
+        // Inicializar
+        cargarMateriales();
+    </script>
+</body>
+</html>

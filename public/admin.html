@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Impresión 3D Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #6E6E6E;
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(135deg, #BAFF39 0%, #6E6E6E 100%);
+            color: white;
+            padding: 2rem 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        
+        .sidebar-header h2 {
+            padding: 0 1.5rem;
+            margin-bottom: 2rem;
+            font-size: 1.5rem;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+        }
+        
+        .menu-item {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+        
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .menu-item.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-left-color: white;
+        }
+        
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 2rem;
+        }
+        
+        .header {
+            background: #BAFF39;
+            padding: 1.5rem 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            color: #333;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .btn-logout {
+            background: #ef4444;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .content-section {
+            display: none;
+        }
+        
+        .content-section.active {
+            display: block;
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background: #BAFF39;
+            padding: 1rem;
+            text-align: left;
+        }
+        
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .action-btn {
+            padding: 0.4rem 0.8rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 0.5rem;
+        }
+        
+        .btn-view {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .btn-convert {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+        
+        .status-badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-pendiente {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+        
+        .status-proceso {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .login-container {
+            max-width: 400px;
+            margin: 5rem auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+        }
+        
+        .btn-primary {
+            width: 100%;
+            background: #667eea;
+            color: white;
+            padding: 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" style="width: 100%; display: block;">
+        <div class="login-container">
+            <h2 style="text-align: center; margin-bottom: 2rem;">Panel de Administración</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Usuario</label>
+                    <input type="text" id="loginUsuario" required>
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn-primary">Iniciar Sesión</button>
+            </form>
+            <p style="text-align: center; margin-top: 1rem; color: #666;">
+                Usuario: admin | Contraseña: admin123
+            </p>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="adminPanel" style="display: none; width: 100%;">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>🖨️ Admin Panel</h2>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="menu-item active" onclick="showSection('dashboard')">📊 Dashboard</li>
+                <li class="menu-item" onclick="showSection('cotizaciones')">📋 Cotizaciones</li>
+                <li class="menu-item" onclick="showSection('pedidos')">📦 Pedidos Activos</li>
+                <li class="menu-item" onclick="showSection('materiales')">🧱 Materiales</li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <div class="header">
+                <h1 id="pageTitle">Dashboard</h1>
+                <div class="user-info">
+                    <span>Administrador</span>
+                    <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+                </div>
+            </div>
+
+            <!-- Dashboard -->
+            <section class="content-section active" id="dashboard">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3 id="statCotizaciones">0</h3>
+                        <p>Cotizaciones Pendientes</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="statPedidos">0</h3>
+                        <p>Pedidos Activos</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Cotizaciones -->
+            <section class="content-section" id="cotizaciones">
+                <div class="table-container">
+                    <h2 style="margin-bottom: 1rem;">Cotizaciones Pendientes</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nº Ref</th>
+                                <th>Cliente</th>
+                                <th>Fecha</th>
+                                <th>Material</th>
+                                <th>Precio</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaCotizaciones">
+                            <tr><td colspan="6" style="text-align: center;">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Pedidos -->
+            <section class="content-section" id="pedidos">
+                <div class="table-container">
+                    <h2 style="margin-bottom: 1rem;">Pedidos Activos</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nº Pedido</th>
+                                <th>Cliente</th>
+                                <th>Material</th>
+                                <th>Fecha Entrega</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaPedidos">
+                            <tr><td colspan="6" style="text-align: center;">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Materiales -->
+            <section class="content-section" id="materiales">
+                <div class="table-container">
+                    <h2 style="margin-bottom: 1rem;">Agregar Nuevo Material</h2>
+                    <form id="formMaterial">
+                        <div class="form-group">
+                            <label>Nombre del Material</label>
+                            <input type="text" name="nombre" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Precio por Gramo (CLP)</label>
+                            <input type="number" name="precio_gramo" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Colores Disponibles (separados por coma)</label>
+                            <input type="text" name="colores" required placeholder="Blanco,Negro,Rojo">
+                        </div>
+                        <button type="submit" class="btn-primary">Agregar Material</button>
+                    </form>
+                </div>
+
+                <div class="table-container" style="margin-top: 2rem;">
+                    <h2 style="margin-bottom: 1rem;">Materiales Existentes</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Material</th>
+                                <th>Precio/Gramo</th>
+                                <th>Colores</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaMateriales">
+                            <tr><td colspan="3" style="text-align: center;">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        let isLoggedIn = false;
+
+        // Login
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const usuario = document.getElementById('loginUsuario').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                const response = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usuario, password })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    isLoggedIn = true;
+                    document.getElementById('loginScreen').style.display = 'none';
+                    document.getElementById('adminPanel').style.display = 'flex';
+                    cargarDashboard();
+                } else {
+                    alert('Credenciales inválidas');
+                }
+            } catch (error) {
+                alert('Error al iniciar sesión');
+            }
+        });
+
+        // Logout
+        async function logout() {
+            await fetch('/api/admin/logout', { method: 'POST' });
+            location.reload();
+        }
+
+        // Cambiar sección
+        function showSection(section) {
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            document.getElementById(section).classList.add('active');
+            
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const titles = {
+                'dashboard': 'Dashboard',
+                'cotizaciones': 'Cotizaciones',
+                'pedidos': 'Pedidos Activos',
+                'materiales': 'Materiales'
+            };
+            document.getElementById('pageTitle').textContent = titles[section];
+            
+            if (section === 'cotizaciones') cargarCotizaciones();
+            if (section === 'pedidos') cargarPedidos();
+            if (section === 'materiales') cargarMateriales();
+        }
+
+        // Cargar dashboard
+        async function cargarDashboard() {
+            try {
+                const [cotRes, pedRes] = await Promise.all([
+                    fetch('/api/admin/cotizaciones'),
+                    fetch('/api/admin/pedidos')
+                ]);
+                
+                const cotizaciones = await cotRes.json();
+                const pedidos = await pedRes.json();
+                
+                document.getElementById('statCotizaciones').textContent = cotizaciones.length;
+                document.getElementById('statPedidos').textContent = pedidos.length;
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Cargar cotizaciones
+        async function cargarCotizaciones() {
+            try {
+                const response = await fetch('/api/admin/cotizaciones');
+                const cotizaciones = await response.json();
+                
+                const tbody = document.getElementById('tablaCotizaciones');
+                
+                if (cotizaciones.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No hay cotizaciones pendientes</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = cotizaciones.map(cot => `
+                    <tr>
+                        <td>${cot.numero_referencia}</td>
+                        <td>${cot.nombre_cliente}</td>
+                        <td>${new Date(cot.fecha_creacion).toLocaleDateString('es-CL')}</td>
+                        <td>${cot.material}</td>
+                        <td>$${cot.precio_total.toLocaleString('es-CL')}</td>
+                        <td>
+                            <button class="action-btn btn-view" onclick="verCotizacion(${cot.id})">👁️ Ver</button>
+                            <button class="action-btn btn-convert" onclick="convertirPedido(${cot.id})">✓ Convertir</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Cargar pedidos
+        async function cargarPedidos() {
+            try {
+                const response = await fetch('/api/admin/pedidos');
+                const pedidos = await response.json();
+                
+                const tbody = document.getElementById('tablaPedidos');
+                
+                if (pedidos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No hay pedidos activos</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = pedidos.map(ped => `
+                    <tr>
+                        <td>${ped.numero_pedido}</td>
+                        <td>${ped.nombre_cliente}</td>
+                        <td>${ped.material || 'N/A'}</td>
+                        <td>${new Date(ped.fecha_entrega_estimada).toLocaleDateString('es-CL')}</td>
+                        <td>
+                            <select onchange="cambiarEstado(${ped.id}, this.value)">
+                                <option value="confirmado" ${ped.estado === 'confirmado' ? 'selected' : ''}>Confirmado</option>
+                                <option value="en_cola" ${ped.estado === 'en_cola' ? 'selected' : ''}>En Cola</option>
+                                <option value="en_impresion" ${ped.estado === 'en_impresion' ? 'selected' : ''}>En Impresión</option>
+                                <option value="finalizado" ${ped.estado === 'finalizado' ? 'selected' : ''}>Finalizado</option>
+                                <option value="listo_retiro" ${ped.estado === 'listo_retiro' ? 'selected' : ''}>Listo Retiro</option>
+                                <option value="entregado" ${ped.estado === 'entregado' ? 'selected' : ''}>Entregado</option>
+                            </select>
+                        </td>
+                        <td>
+                            <button class="action-btn btn-view" onclick="verSeguimiento('${ped.link_seguimiento}')">🔗 Link</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Cargar materiales
+        async function cargarMateriales() {
+            try {
+                const response = await fetch('/api/materiales');
+                const materiales = await response.json();
+                
+                const tbody = document.getElementById('tablaMateriales');
+                tbody.innerHTML = materiales.map(mat => `
+                    <tr>
+                        <td>${mat.nombre}</td>
+                        <td>$${mat.precio_gramo.toLocaleString('es-CL')}</td>
+                        <td>${mat.colores}</td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Agregar material
+        document.getElementById('formMaterial').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            
+            try {
+                const response = await fetch('/api/admin/materiales', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    alert('Material agregado exitosamente');
+                    e.target.reset();
+                    cargarMateriales();
+                }
+            } catch (error) {
+                alert('Error al agregar material');
+            }
+        });
+
+        // Convertir cotización a pedido
+        async function convertirPedido(cotizacionId) {
+            if (!confirm('¿Convertir esta cotización en pedido?')) return;
+            
+            try {
+                const response = await fetch(`/api/admin/cotizacion/${cotizacionId}/convertir`, {
+                    method: 'POST'
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert(`Pedido creado: ${result.numeroPedido}\nLink de seguimiento: ${window.location.origin}${result.linkSeguimiento}`);
+                    cargarCotizaciones();
+                    cargarDashboard();
+                }
+            } catch (error) {
+                alert('Error al convertir pedido');
+            }
+        }
+
+        // Cambiar estado de pedido
+        async function cambiarEstado(pedidoId, nuevoEstado) {
+            try {
+                const response = await fetch(`/api/admin/pedido/${pedidoId}/estado`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ estado: nuevoEstado })
+                });
+                
+                if (response.ok) {
+                    alert('Estado actualizado');
+                }
+            } catch (error) {
+                alert('Error al actualizar estado');
+            }
+        }
+
+        function verCotizacion(id) {
+            alert('Ver detalles de cotización #' + id);
+        }
+
+        function verSeguimiento(link) {
+            window.open(`/seguimiento.html?link=${link}`, '_blank');
+        }
+
+        // Verificar sesión al cargar
+        async function verificarSesion() {
+            try {
+                const response = await fetch('/api/admin/check-session');
+                const result = await response.json();
+                
+                if (result.loggedIn) {
+                    isLoggedIn = true;
+                    document.getElementById('loginScreen').style.display = 'none';
+                    document.getElementById('adminPanel').style.display = 'flex';
+                    cargarDashboard();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        verificarSesion();
+    </script>
+</body>
+</html>

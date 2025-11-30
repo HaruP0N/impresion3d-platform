@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seguimiento de Pedido - Impresión 3D Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #6E6E6E;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+            animation: fadeInDown 0.8s ease;
+        }
+        
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .tracking-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            animation: fadeInUp 0.8s ease;
+        }
+        
+        .order-header {
+            background: #BAFF39;
+            color: rgb(0, 0, 0);
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .order-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .tracking-content {
+            padding: 2rem;
+        }
+        
+        .timeline {
+            position: relative;
+            padding: 2rem 0;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50px;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #e0e0e0;
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 2rem;
+            padding-left: 120px;
+            animation: slideInLeft 0.6s ease;
+            animation-fill-mode: backwards;
+        }
+        
+        .timeline-icon {
+            position: absolute;
+            left: 28px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            background: white;
+            border: 4px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+        
+        .timeline-item.completed .timeline-icon {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
+        
+        .timeline-item.active .timeline-icon {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 0 15px rgba(102, 126, 234, 0);
+            }
+        }
+        
+        .timeline-content {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            border-left: 4px solid #e0e0e0;
+        }
+        
+        .timeline-item.completed .timeline-content {
+            border-left-color: #10b981;
+        }
+        
+        .timeline-item.active .timeline-content {
+            border-left-color: #667eea;
+            background: #f0f4ff;
+        }
+        
+        .timeline-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        
+        .timeline-item.active .timeline-title {
+            color: #667eea;
+        }
+        
+        .timeline-date {
+            color: #999;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .order-details {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-top: 2rem;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #666;
+        }
+        
+        .delivery-estimate {
+            background: #BAFF39;
+            color: rgb(0, 0, 0);
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 2rem;
+        }
+        
+        .delivery-date {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+        
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 3rem;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🖨️</div>
+            <h1>Seguimiento de Pedido</h1>
+            <p>Impresión 3D Pro</p>
+        </div>
+
+        <div id="loadingSection" class="loading">
+            <div class="spinner"></div>
+            <p>Cargando información del pedido...</p>
+        </div>
+
+        <div id="errorSection" style="display: none;">
+            <div class="error-message">
+                <h2 style="margin-bottom: 1rem;">❌ Pedido No Encontrado</h2>
+                <p>El link de seguimiento no es válido o el pedido no existe.</p>
+                <p style="margin-top: 1rem;">Por favor, verifica el enlace o contacta con nosotros.</p>
+            </div>
+        </div>
+
+        <div id="trackingSection" style="display: none;">
+            <div class="tracking-card">
+                <div class="order-header">
+                    <div class="order-number" id="numeroPedido"></div>
+                    <div class="order-date" id="fechaPedido"></div>
+                </div>
+
+                <div class="tracking-content">
+                    <div class="timeline" id="timelineContainer">
+                        <!-- Se llenará dinámicamente -->
+                    </div>
+
+                    <div class="delivery-estimate">
+                        <h3>Fecha Estimada de Entrega</h3>
+                        <div class="delivery-date" id="fechaEntrega"></div>
+                    </div>
+
+                    <div class="order-details">
+                        <h2 style="margin-bottom: 1rem;">Detalles del Pedido</h2>
+                        <div id="detallesPedido">
+                            <!-- Se llenará dinámicamente -->
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="descargarPDF()">
+                            📄 Descargar Cotización PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const linkSeguimiento = urlParams.get('link') || window.location.pathname.split('/seguimiento/')[1];
+
+        const estadosConfig = {
+            'confirmado': {
+                titulo: 'Pedido Confirmado',
+                icono: '✓',
+                descripcion: 'El pedido ha sido confirmado y está en nuestro sistema.'
+            },
+            'en_cola': {
+                titulo: 'En Cola de Impresión',
+                icono: '⏳',
+                descripcion: 'Tu pedido está en cola y será procesado según el orden de llegada.'
+            },
+            'en_impresion': {
+                titulo: 'En Impresión',
+                icono: '🖨️',
+                descripcion: '¡Tu pedido se está imprimiendo en este momento!'
+            },
+            'finalizado': {
+                titulo: 'Finalizado',
+                icono: '✅',
+                descripcion: 'La impresión ha sido completada y está en control de calidad.'
+            },
+            'listo_retiro': {
+                titulo: 'Listo para Retiro',
+                icono: '📦',
+                descripcion: 'Tu pedido está listo para ser retirado.'
+            },
+            'entregado': {
+                titulo: 'Entregado',
+                icono: '🎉',
+                descripcion: 'El pedido ha sido entregado exitosamente.'
+            }
+        };
+
+        const ordenEstados = ['confirmado', 'en_cola', 'en_impresion', 'finalizado', 'listo_retiro', 'entregado'];
+
+        async function cargarSeguimiento() {
+            try {
+                const response = await fetch(`/api/seguimiento/${linkSeguimiento}`);
+                
+                if (!response.ok) {
+                    throw new Error('Pedido no encontrado');
+                }
+                
+                const data = await response.json();
+                
+                document.getElementById('loadingSection').style.display = 'none';
+                document.getElementById('trackingSection').style.display = 'block';
+                
+                mostrarInformacionPedido(data);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('loadingSection').style.display = 'none';
+                document.getElementById('errorSection').style.display = 'block';
+            }
+        }
+
+        function mostrarInformacionPedido(data) {
+            const pedido = data.pedido;
+            const historial = data.historial;
+            
+            // Header
+            document.getElementById('numeroPedido').textContent = pedido.numero_pedido;
+            document.getElementById('fechaPedido').textContent = 
+                `Pedido realizado el ${new Date(pedido.fecha_creacion).toLocaleDateString('es-CL', { 
+                    day: 'numeric', 
+                    month: 'long', 
+                    year: 'numeric' 
+                })}`;
+            
+            // Fecha de entrega
+            document.getElementById('fechaEntrega').textContent = 
+                new Date(pedido.fecha_entrega_estimada).toLocaleDateString('es-CL', { 
+                    day: 'numeric', 
+                    month: 'long', 
+                    year: 'numeric' 
+                });
+            
+            // Timeline
+            const timelineContainer = document.getElementById('timelineContainer');
+            const estadoActual = pedido.estado;
+            const indexActual = ordenEstados.indexOf(estadoActual);
+            
+            timelineContainer.innerHTML = ordenEstados.map((estado, index) => {
+                const config = estadosConfig[estado];
+                const historialItem = historial.find(h => h.estado === estado);
+                
+                let claseEstado = '';
+                if (index < indexActual) {
+                    claseEstado = 'completed';
+                } else if (index === indexActual) {
+                    claseEstado = 'active';
+                }
+                
+                const fecha = historialItem 
+                    ? new Date(historialItem.fecha).toLocaleString('es-CL')
+                    : 'Estimado';
+                
+                return `
+                    <div class="timeline-item ${claseEstado}">
+                        <div class="timeline-icon">${config.icono}</div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">${config.titulo}</div>
+                            <div class="timeline-date">${fecha}</div>
+                            <div class="timeline-description">
+                                ${historialItem?.descripcion || config.descripcion}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Detalles
+            const detallesContainer = document.getElementById('detallesPedido');
+            detallesContainer.innerHTML = `
+                <div class="detail-row">
+                    <span class="detail-label">Archivo:</span>
+                    <span class="detail-value">${pedido.archivo_nombre}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Material:</span>
+                    <span class="detail-value">${pedido.material}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Color:</span>
+                    <span class="detail-value">${pedido.color}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Cantidad:</span>
+                    <span class="detail-value">${pedido.cantidad} unidad(es)</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Servicio Urgente:</span>
+                    <span class="detail-value">${pedido.urgente ? 'Sí' : 'No'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Precio Total:</span>
+                    <span class="detail-value" style="font-weight: bold; font-size: 1.2rem; color: #667eea;">
+                        $${pedido.precio_total.toLocaleString('es-CL')} CLP
+                    </span>
+                </div>
+            `;
+        }
+
+        function descargarPDF() {
+            const pedido = document.getElementById('numeroPedido').textContent;
+            const numeroRef = pedido.replace('PED', 'COT');
+            window.open(`/api/cotizacion/${numeroRef}/pdf`, '_blank');
+        }
+
+        // Cargar al inicio
+        cargarSeguimiento();
+        
+        // Auto-actualizar cada 30 segundos
+        setInterval(cargarSeguimiento, 30000);
+    </script>
+</body>
+</html>
