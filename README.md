@@ -1,6 +1,144 @@
 # impresion3d-platform
 # 🖨️ Plataforma Web de Pedidos y Cotización de Impresiones 3D
 
+---------------------------------------------------
+🚀 Guía Rápida de Implementación
+✅ Checklist Completo
+Fase 1: Preparación (10 minutos)
+
+ Paso 1: Crear carpeta del proyecto
+
+bashmkdir impresion3d-platform
+cd impresion3d-platform
+
+ Paso 2: Copiar archivos principales
+
+server.js (Backend completo)
+package.json (Dependencias)
+setup.js (Script de configuración)
+
+
+ Paso 3: Instalar Node.js
+
+Descargar de https://nodejs.org/ (versión LTS)
+Verificar instalación: node --version
+
+
+
+Fase 2: Instalación (5 minutos)
+
+ Paso 4: Ejecutar configuración inicial
+
+bashnpm install
+node setup.js
+
+ Paso 5: Crear carpeta public/ y copiar archivos HTML
+
+public/
+├── index.html          (Tu home.html existente)
+├── cotizacion.html     (Artifact: Cotización Funcional)
+├── admin.html          (Artifact: Panel Admin Funcional)
+└── seguimiento.html    (Artifact: Seguimiento Funcional)
+Fase 3: Configuración (5 minutos)
+
+ Paso 6: Configurar email (opcional)
+
+Ir a https://myaccount.google.com
+Seguridad → Verificación en 2 pasos (activar)
+Contraseñas de aplicaciones → Generar
+Editar server.js líneas 85-90 con tus credenciales
+
+
+ Paso 7: Ajustar información del negocio
+
+En server.js buscar "tu-email@gmail.com" y reemplazar
+Actualizar información de contacto en los HTML
+
+
+
+Fase 4: Prueba (10 minutos)
+
+ Paso 8: Iniciar servidor
+
+bashnpm start
+Deberías ver:
+╔═══════════════════════════════════════════════════╗
+║   🖨️  SERVIDOR IMPRESIÓN 3D PRO - INICIADO      ║
+╠═══════════════════════════════════════════════════╣
+║   Puerto: 3000                                    ║
+║   URL: http://localhost:3000                      ║
+╚═══════════════════════════════════════════════════╝
+
+ Paso 9: Probar funcionalidades
+
+Prueba 1: Cotización
+
+Abrir http://localhost:3000/cotizacion.html
+Subir archivo (cualquier archivo .stl o .obj)
+Completar formulario
+Verificar que se genera número de referencia
+
+Prueba 2: Panel Admin
+
+Abrir http://localhost:3000/admin.html
+Login: admin / admin123
+Ver cotización creada en paso anterior
+Convertir a pedido
+Copiar link de seguimiento
+
+Prueba 3: Seguimiento
+
+Abrir el link de seguimiento del paso anterior
+Verificar que muestra estado del pedido
+Probar cambiar estado desde panel admin
+Refrescar seguimiento y ver actualización
+
+📦 Archivos que Necesitas
+1. Backend (server.js)
+Copiar del artifact "Backend - Servidor Node.js"
+2. Package.json
+Copiar del artifact "package.json - Dependencias"
+3. Setup Script
+Copiar del artifact "Script de Configuración Inicial"
+4. Frontend
+Cotización
+Copiar del artifact "Cotización Funcional - Frontend"
+Guardar como: public/cotizacion.html
+Admin
+Copiar del artifact "Panel Admin Funcional"
+Guardar como: public/admin.html
+Seguimiento
+Copiar del artifact "Página de Seguimiento Funcional"
+Guardar como: public/seguimiento.html
+Home
+Usar tu archivo home.html existente
+Guardar como: public/index.html
+🔧 Solución de Problemas Comunes
+Error: "Cannot find module 'express'"
+Solución:
+bashnpm install
+Error: "Port 3000 is already in use"
+Solución: Editar server.js línea 13
+javascriptconst PORT = 3001; // Cambiar puerto
+Error: "Permission denied" al ejecutar setup.js
+Solución:
+bashchmod +x setup.js
+node setup.js
+Los emails no se envían
+Solución:
+
+Verificar que tienes App Password (no contraseña normal)
+Activar "Verificación en 2 pasos" en Gmail
+Generar nuevo App Password en myaccount.google.com
+Actualizar credenciales en server.js
+
+Base de datos no se crea
+Solución:
+bashtouch database.db
+npm start
+
+-----------------------------------------------------
+
 Sistema completo para gestionar cotizaciones y pedidos de impresión 3D con panel de administración integrado.
 
 ## 📋 Características Implementadas
